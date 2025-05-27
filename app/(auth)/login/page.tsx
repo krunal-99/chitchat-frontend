@@ -1,18 +1,26 @@
 "use client";
+import { handleLogin } from "@/actions/serverActions";
+import { login } from "@/store/authSlice";
+import { handleError, handleSuccess } from "@/utils/utils";
 import {
   LoginFormData,
   loginSchema,
   RegisterFormData,
 } from "@/utils/validationSchema";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { useDispatch } from "react-redux";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errors, setErrors] = useState<
     Partial<Record<keyof LoginFormData, string>>
   >({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,6 +40,23 @@ export default function LoginPage() {
       });
       setErrors(fieldErrors);
       return;
+    }
+    try {
+      setIsLoading(true);
+      const response = await handleLogin(result.data);
+      console.log("Login response:", response);
+      if (response.status === "success") {
+        handleSuccess("Logged in successfully");
+        dispatch(login({ user: response.user, token: response.token }));
+        router.push("/");
+      } else {
+        handleError(response.message);
+        console.log("Login failed:", response.message);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -111,10 +136,13 @@ export default function LoginPage() {
           </div>
           <div>
             <button
+              disabled={isLoading}
               type="submit"
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-slate-800 transition duration-150 ease-in-out cursor-pointer"
+              className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-slate-800 transition duration-150 ease-in-out cursor-pointer ${
+                isLoading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              Sign In
+              {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </div>
         </form>

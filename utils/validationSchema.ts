@@ -37,6 +37,13 @@ export const registerSchema = z
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
+export type RegisteredUserData = {
+  username: string;
+  email: string;
+  password: string;
+  profilePicture: string;
+};
+
 export const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z

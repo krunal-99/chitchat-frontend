@@ -1,12 +1,19 @@
 "use client";
 import { uploadImageToCloudinary } from "@/utils/uploadImageToCloudinary";
-import { registerSchema, RegisterFormData } from "@/utils/validationSchema";
+import {
+  registerSchema,
+  RegisterFormData,
+  RegisteredUserData,
+} from "@/utils/validationSchema";
 import Image from "next/image";
 import Link from "next/link";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { useState, ChangeEvent, FormEvent } from "react";
 import Input from "@/components/Input";
 import { formFields } from "@/constants/constants";
+import { handleRegister } from "@/actions/serverActions";
+import { useRouter } from "next/navigation";
+import { handleError, handleSuccess } from "@/utils/utils";
 
 export default function RegisterPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -18,7 +25,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
-
+  const router = useRouter();
   const handleProfilePictureChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -64,7 +71,21 @@ export default function RegisterPage() {
       const imageUrl = await uploadImageToCloudinary(
         result.data.profilePicture
       );
-      console.log(result.data);
+      const registeredData: RegisteredUserData = {
+        username: result.data.username,
+        email: result.data.email,
+        password: result.data.password,
+        profilePicture: imageUrl,
+      };
+      const response = await handleRegister(registeredData);
+      console.log("Registration response:", response);
+      if (response.status === "success") {
+        handleSuccess("Registration successful!");
+        router.push("/login");
+      } else {
+        handleError(response.message);
+        console.log("Registration failed:", response.message);
+      }
     } catch (error) {
       console.error("Registration error:", error);
     } finally {
