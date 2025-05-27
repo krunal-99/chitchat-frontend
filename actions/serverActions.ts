@@ -1,8 +1,9 @@
 "use server";
+import { API_URL } from "@/constants/constants";
 import { RegisteredUserData } from "@/utils/validationSchema";
 
 export async function handleRegister(userData: RegisteredUserData) {
-  const response = await fetch("http://localhost:4000/api/auth/register", {
+  const response = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -21,7 +22,7 @@ export async function handleLogin({
   email: string;
   password: string;
 }) {
-  const response = await fetch("http://localhost:4000/api/auth/login", {
+  const response = await fetch(`${API_URL}/api/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

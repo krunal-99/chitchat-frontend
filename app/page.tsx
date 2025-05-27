@@ -1,3 +1,11 @@
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 export default function Home() {
-  return <h1>Chit Chat</h1>;
+  return (
+    <ProtectedRoute>
+      <div>
+        <h1>Chitchat</h1>
+      </div>
+    </ProtectedRoute>
+  );
 }

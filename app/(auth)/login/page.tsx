@@ -8,7 +8,7 @@ import {
   RegisterFormData,
 } from "@/utils/validationSchema";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { useDispatch } from "react-redux";
@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const dispatch = useDispatch();
+  const searchParams = useSearchParams();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,7 +49,8 @@ export default function LoginPage() {
       if (response.status === "success") {
         handleSuccess("Logged in successfully");
         dispatch(login({ user: response.user, token: response.token }));
-        router.push("/");
+        const redirectTo = searchParams.get("redirect") || "/";
+        router.push(redirectTo);
       } else {
         handleError(response.message);
         console.log("Login failed:", response.message);
