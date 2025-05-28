@@ -1,10 +1,23 @@
 "use client";
-import { useState, useEffect, useRef, ChangeEvent, FormEvent } from "react";
+import { logout } from "@/store/authSlice";
+import { RootState } from "@/store/ReduxProvider";
+import { handleSuccess } from "@/utils/utils";
+import { useRouter } from "next/navigation";
+import { constrainedMemory } from "process";
+import {
+  useState,
+  useEffect,
+  useRef,
+  ChangeEvent,
+  FormEvent,
+  use,
+} from "react";
 import { FaArrowLeft, FaSearch, FaUserAlt } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { IoSend, IoSettingsOutline } from "react-icons/io5";
+import { useDispatch, useSelector } from "react-redux";
 interface User {
-  id: string;
+  id: number;
   username: string;
   profilePictureUrl?: string;
   isOnline: boolean;
@@ -12,15 +25,10 @@ interface User {
   lastMessageTimestamp?: Date;
 }
 interface Message {
-  id: string;
-  senderId: string;
+  id: number;
+  senderId: number;
   text: string;
   timestamp: Date;
-}
-interface CurrentUser {
-  id: string;
-  username: string;
-  profilePictureUrl?: string;
 }
 
 export default function ChatPage() {
@@ -28,11 +36,14 @@ export default function ChatPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileView, setIsMobileView] = useState(false);
   const [showChatViewMobile, setShowChatViewMobile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const currentUser = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     const checkMobile = () => setIsMobileView(window.innerWidth < 768);
@@ -42,15 +53,9 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    setCurrentUser({
-      id: "currentUser123",
-      username: "Rohan Sharma",
-      profilePictureUrl:
-        "https://placehold.co/100x100/7DD3FC/0C4A6E?text=RS&font=Inter",
-    });
     setUsers([
       {
-        id: "user1",
+        id: 10,
         username: "Priya Mehta",
         profilePictureUrl:
           "https://placehold.co/100x100/F472B6/831843?text=PM&font=Inter",
@@ -59,7 +64,7 @@ export default function ChatPage() {
         lastMessageTimestamp: new Date(Date.now() - 60000 * 5),
       },
       {
-        id: "user2",
+        id: 11,
         username: "Amit Patel",
         profilePictureUrl:
           "https://placehold.co/100x100/34D399/057A55?text=AP&font=Inter",
@@ -68,7 +73,7 @@ export default function ChatPage() {
         lastMessageTimestamp: new Date(Date.now() - 60000 * 60 * 2),
       },
       {
-        id: "user3",
+        id: 12,
         username: "Sneha Reddy",
         profilePictureUrl:
           "https://placehold.co/100x100/FDBA74/9A3412?text=SR&font=Inter",
@@ -77,7 +82,7 @@ export default function ChatPage() {
         lastMessageTimestamp: new Date(Date.now() - 60000 * 30),
       },
       {
-        id: "user4",
+        id: 13,
         username: "Vikram Singh",
         isOnline: true,
         lastMessage: "Just reached office.",
@@ -86,7 +91,7 @@ export default function ChatPage() {
         lastMessageTimestamp: new Date(Date.now() - 60000 * 15),
       },
       {
-        id: "user5",
+        id: 14,
         username: "Deepika Iyer",
         profilePictureUrl:
           "https://placehold.co/100x100/A78BFA/5B21B6?text=DI&font=Inter",
@@ -95,7 +100,7 @@ export default function ChatPage() {
         lastMessageTimestamp: new Date(Date.now() - 60000 * 60 * 24),
       },
       {
-        id: "user6",
+        id: 15,
         username: "Arjun Kumar",
         profilePictureUrl:
           "https://placehold.co/100x100/F87171/991B1B?text=AK&font=Inter",
@@ -111,31 +116,31 @@ export default function ChatPage() {
       const userMessages: Record<string, Message[]> = {
         user1: [
           {
-            id: "msg1_1",
+            id: 11,
             senderId: selectedUser.id,
             text: "Hey Rohan! 👋 Long time no see.",
             timestamp: new Date(Date.now() - 60000 * 25),
           },
           {
-            id: "msg1_2",
-            senderId: "currentUser123",
+            id: 1,
+            senderId: 100,
             text: "Priya! Good to hear from you. How are things?",
             timestamp: new Date(Date.now() - 60000 * 24),
           },
           {
-            id: "msg1_3",
+            id: 2,
             senderId: selectedUser.id,
             text: "All good here. What about you? Still in Bangalore?",
             timestamp: new Date(Date.now() - 60000 * 23),
           },
           {
-            id: "msg1_4",
-            senderId: "currentUser123",
+            id: 3,
+            senderId: 101,
             text: "Yep, same old! We should catch up sometime.",
             timestamp: new Date(Date.now() - 60000 * 22),
           },
           {
-            id: "msg1_5",
+            id: 4,
             senderId: selectedUser.id,
             text: "Definitely! Haan, meeting at 5 PM works!",
             timestamp: new Date(Date.now() - 60000 * 5),
@@ -143,26 +148,26 @@ export default function ChatPage() {
         ],
         user3: [
           {
-            id: "msg3_1",
+            id: 5,
             senderId: selectedUser.id,
             text: "Hey! Are you free this weekend?",
             timestamp: new Date(Date.now() - 60000 * 35),
           },
           {
-            id: "msg3_2",
-            senderId: "currentUser123",
+            id: 6,
+            senderId: 123,
             text: "I think so, why what's up?",
             timestamp: new Date(Date.now() - 60000 * 34),
           },
           {
-            id: "msg3_3",
+            id: 7,
             senderId: selectedUser.id,
             text: "Movie plan for weekend? 🍿 Thinking of that new Marvel one.",
             timestamp: new Date(Date.now() - 60000 * 30),
           },
           {
-            id: "msg3_4",
-            senderId: "currentUser123",
+            id: 8,
+            senderId: 123,
             text: "Sounds great! Count me in.",
             timestamp: new Date(Date.now() - 60000 * 29),
           },
@@ -196,7 +201,7 @@ export default function ChatPage() {
     e.preventDefault();
     if (newMessage.trim() === "" || !selectedUser || !currentUser) return;
     const myMessage: Message = {
-      id: `msg${Date.now()}`,
+      id: 100,
       senderId: currentUser.id,
       text: newMessage,
       timestamp: new Date(),
@@ -204,7 +209,11 @@ export default function ChatPage() {
     setMessages((prevMessages) => [...prevMessages, myMessage]);
     setNewMessage("");
   };
-  const handleLogout = () => console.log("Logout clicked");
+  const handleLogout = () => {
+    dispatch(logout());
+    handleSuccess("Logged out successfully");
+    router.push("/login");
+  };
   const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -445,17 +454,17 @@ export default function ChatPage() {
                 className="flex items-center space-x-2.5 group cursor-pointer"
                 onClick={() => alert("Navigate to profile page")}
               >
-                {currentUser.profilePictureUrl ? (
+                {currentUser.image_url ? (
                   <img
-                    src={currentUser.profilePictureUrl}
-                    alt={currentUser.username}
+                    src={currentUser.image_url}
+                    alt={currentUser.user_name}
                     className="w-10 h-10 rounded-full object-cover transition-transform duration-300 group-hover:scale-105 ring-2 ring-transparent group-hover:ring-sky-400"
                   />
                 ) : (
                   <FaUserAlt />
                 )}
                 <span className="font-semibold text-sm text-slate-100 group-hover:text-sky-400">
-                  {currentUser.username}
+                  {currentUser.user_name}
                 </span>
               </div>
               <button
