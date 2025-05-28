@@ -33,3 +33,14 @@ export async function handleLogin({
   const data = await response.json();
   return data;
 }
+
+export async function getAllUsers() {
+  const response = await fetch(`${API_URL}/api/auth`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const data = await response.json();
+  return data;
+}
