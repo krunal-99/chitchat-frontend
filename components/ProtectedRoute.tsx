@@ -74,7 +74,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 };
 
 export default ProtectedRoute;
-
 export const AuthRoute: React.FC<ProtectedRouteProps> = ({
   children,
   redirectTo = "/",
@@ -83,27 +82,20 @@ export const AuthRoute: React.FC<ProtectedRouteProps> = ({
   const { isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth
   );
-  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+
   useEffect(() => {
     if (isAuthenticated && token) {
-      setIsRedirecting(true);
       router.replace(redirectTo);
-    } else {
-      setIsRedirecting(false);
     }
   }, [isAuthenticated, token, router, redirectTo]);
-
-  if (isRedirecting) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-sky-500"></div>
-      </div>
-    );
-  }
 
   if (!isAuthenticated || !token) {
     return <>{children}</>;
   }
 
-  return null;
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-sky-500"></div>
+    </div>
+  );
 };

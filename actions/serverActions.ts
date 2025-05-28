@@ -36,6 +36,23 @@ export async function handleLogin({
 
 export async function getAllUsers() {
   const response = await fetch(`${API_URL}/api/auth`, {
+    next: {
+      tags: ["users"],
+    },
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const data = await response.json();
+  return data;
+}
+
+export async function getAllMessages() {
+  const response = await fetch(`${API_URL}/messages`, {
+    next: {
+      tags: ["messages"],
+    },
     method: "GET",
     headers: {
       "Content-Type": "application/json",
