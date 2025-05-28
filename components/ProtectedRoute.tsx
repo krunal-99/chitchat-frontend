@@ -3,16 +3,16 @@ import { API_URL } from "@/constants/constants";
 import { logout } from "@/store/authSlice";
 import { RootState } from "@/store/ReduxProvider";
 import { handleError } from "@/utils/utils";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-interface PrivateRouteProps {
+interface ProtectedRouteProps {
   children: ReactNode;
   redirectTo?: string;
 }
 
-const ProtectedRoute: React.FC<PrivateRouteProps> = ({
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   redirectTo = "/login",
 }) => {
@@ -20,12 +20,13 @@ const ProtectedRoute: React.FC<PrivateRouteProps> = ({
   const { isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth
   );
+
   const dispatch = useDispatch();
   const [isVerifying, setIsVerifying] = useState<boolean>(true);
 
   useEffect(() => {
     const verifyToken = async () => {
-      if (!token || !isAuthenticated) {
+      if (!token) {
         handleError("Please login to continue.");
         router.push(redirectTo);
         setIsVerifying(false);
@@ -54,9 +55,8 @@ const ProtectedRoute: React.FC<PrivateRouteProps> = ({
         setIsVerifying(false);
       }
     };
-
     verifyToken();
-  }, []);
+  }, [dispatch, router]);
 
   if (isVerifying) {
     return (
@@ -75,7 +75,7 @@ const ProtectedRoute: React.FC<PrivateRouteProps> = ({
 
 export default ProtectedRoute;
 
-export const AuthRoute: React.FC<PrivateRouteProps> = ({
+export const AuthRoute: React.FC<ProtectedRouteProps> = ({
   children,
   redirectTo = "/",
 }) => {
@@ -83,10 +83,7 @@ export const AuthRoute: React.FC<PrivateRouteProps> = ({
   const { isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth
   );
-  const [isRedirecting, setIsRedirecting] = useState<boolean>(
-    isAuthenticated && !!token
-  );
-
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
   useEffect(() => {
     if (isAuthenticated && token) {
       setIsRedirecting(true);

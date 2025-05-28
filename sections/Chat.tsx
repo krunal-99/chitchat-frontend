@@ -1,21 +1,12 @@
 "use client";
-import { logout } from "@/store/authSlice";
-import { RootState } from "@/store/ReduxProvider";
+import { logout, UserInfo } from "@/store/authSlice";
 import { handleSuccess } from "@/utils/utils";
 import { useRouter } from "next/navigation";
-import { constrainedMemory } from "process";
-import {
-  useState,
-  useEffect,
-  useRef,
-  ChangeEvent,
-  FormEvent,
-  use,
-} from "react";
+import { useState, useEffect, useRef, ChangeEvent, FormEvent } from "react";
 import { FaArrowLeft, FaSearch, FaUserAlt } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { IoSend, IoSettingsOutline } from "react-icons/io5";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 interface User {
   id: number;
   username: string;
@@ -42,8 +33,15 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
 
-  const currentUser = useSelector((state: RootState) => state.auth.user);
+  useEffect(() => {
+    setCurrentUser(
+      localStorage.getItem("user")
+        ? JSON.parse(localStorage.getItem("user")!)
+        : null
+    );
+  }, [localStorage]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobileView(window.innerWidth < 768);
@@ -211,8 +209,8 @@ export default function ChatPage() {
   };
   const handleLogout = () => {
     dispatch(logout());
-    handleSuccess("Logged out successfully");
     router.push("/login");
+    handleSuccess("Logged out successfully");
   };
   const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
@@ -479,13 +477,8 @@ export default function ChatPage() {
           <div className="flex items-center justify-end">
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-2 py-2 px-4 text-sm font-medium 
-               text-red-400 
-               hover:bg-red-700/30 
-               active:bg-red-700/50
-               rounded-lg transition-colors duration-150 ease-in-out 
-               group 
-               focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-slate-800 cursor-pointer"
+              className="flex items-center space-x-2 py-2 px-4 text-sm font-medium text-red-400 hover:bg-red-700/30 
+               active:bg-red-700/50 rounded-lg transition-colors duration-150 ease-in-out group focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-slate-800 cursor-pointer"
               title="Logout"
             >
               <span>Logout</span>

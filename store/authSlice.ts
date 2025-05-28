@@ -1,13 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export interface UserInfo {
+  id: number;
+  user_name: string;
+  email: string;
+  image_url: string;
+}
+
 interface AuthState {
   isAuthenticated: boolean;
-  user: {
-    id: number;
-    user_name: string;
-    email: string;
-    image_url: string;
-  } | null;
+  user: UserInfo | null;
   token: string | null;
 }
 
@@ -33,6 +35,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       if (typeof window !== "undefined") {
         localStorage.setItem("access_token", action.payload.token);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       }
     },
     logout: (state) => {
@@ -41,6 +44,7 @@ const authSlice = createSlice({
       state.token = null;
       if (typeof window !== "undefined") {
         localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
       }
     },
   },
