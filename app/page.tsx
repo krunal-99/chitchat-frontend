@@ -1,11 +1,10 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ChatPage from "@/sections/Chat";
 
 export default function Home() {
   return (
     <ProtectedRoute>
-      <div>
-        <h1>Chitchat</h1>
-      </div>
+      <ChatPage />
     </ProtectedRoute>
   );
 }

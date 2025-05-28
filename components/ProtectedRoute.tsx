@@ -56,7 +56,7 @@ const ProtectedRoute: React.FC<PrivateRouteProps> = ({
     };
 
     verifyToken();
-  }, [token, isAuthenticated, dispatch, router, redirectTo]);
+  }, []);
 
   if (isVerifying) {
     return (
