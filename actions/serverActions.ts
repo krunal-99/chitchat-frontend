@@ -49,16 +49,28 @@ export async function getAllUsers(token: string) {
   return data;
 }
 
-export async function getAllMessages() {
-  const response = await fetch(`${API_URL}/messages`, {
-    next: {
-      tags: ["messages"],
-    },
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  const data = await response.json();
-  return data;
+export async function getMessages(token: string, selectedUserId: number) {
+  try {
+    const response = await fetch(
+      `${API_URL}/messages?selectedUserId=${selectedUserId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return {
+      status: "error",
+      message: "Failed to fetch messages",
+    };
+  }
 }

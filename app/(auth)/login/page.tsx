@@ -45,7 +45,6 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       const response = await handleLogin(result.data);
-      console.log("Login response:", response);
       if (response.status === "success") {
         handleSuccess("Logged in successfully");
         dispatch(login({ user: response.user, token: response.token }));
@@ -53,7 +52,7 @@ export default function LoginPage() {
         router.push(redirectTo);
       } else {
         handleError(response.message);
-        console.log("Login failed:", response.message);
+        console.error("Login failed:", response.message);
       }
     } catch (error) {
       console.error("Registration error:", error);

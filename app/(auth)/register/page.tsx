@@ -78,13 +78,12 @@ export default function RegisterPage() {
         profilePicture: imageUrl,
       };
       const response = await handleRegister(registeredData);
-      console.log("Registration response:", response);
       if (response.status === "success") {
         handleSuccess("Registration successful!");
         router.push("/login");
       } else {
         handleError(response.message);
-        console.log("Registration failed:", response.message);
+        console.error("Registration failed:", response.message);
       }
     } catch (error) {
       console.error("Registration error:", error);
