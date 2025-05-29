@@ -1,17 +1,5 @@
+import { AuthState } from "@/constants/constants";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-export interface UserInfo {
-  id: number;
-  user_name: string;
-  email: string;
-  image_url: string;
-}
-
-interface AuthState {
-  isAuthenticated: boolean;
-  user: UserInfo | null;
-  token: string | null;
-}
 
 const storedToken =
   typeof window !== "undefined" ? localStorage.getItem("access_token") : null;

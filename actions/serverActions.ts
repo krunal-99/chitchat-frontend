@@ -74,3 +74,34 @@ export async function getMessages(token: string, selectedUserId: number) {
     };
   }
 }
+
+export async function sendMessage(
+  token: string,
+  receiverId: number,
+  text: string
+) {
+  try {
+    const response = await fetch(`${API_URL}/messages`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        receiverId,
+        text,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return {
+      status: "error",
+      message: "Failed to send message",
+    };
+  }
+}
