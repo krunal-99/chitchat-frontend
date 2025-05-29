@@ -36,9 +36,6 @@ export async function handleLogin({
 
 export async function getAllUsers(token: string) {
   const response = await fetch(`${API_URL}/api/auth`, {
-    next: {
-      tags: ["users"],
-    },
     method: "GET",
     headers: {
       "Content-Type": "application/json",

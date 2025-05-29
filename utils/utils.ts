@@ -17,3 +17,24 @@ export const handleError = (msg: string | string[]) => {
 export const handleInfo = (msg: string) => {
   toast.info(msg);
 };
+
+export const formatTimeStamp = (date: Date | null) => {
+  if (!date) return "";
+  const now = new Date();
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+  });
+};

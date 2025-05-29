@@ -33,6 +33,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState<boolean>(false);
   const { token } = useSelector((state: RootState) => state.auth);
+  console.log("users", users);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -160,6 +161,17 @@ export default function ChatPage() {
           msg.id === myMessage.id ? { ...msg, id: response.data.id } : msg
         )
       );
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === selectedUser.id
+            ? {
+                ...user,
+                last_message: newMessage,
+                last_message_timestamp: new Date(),
+              }
+            : user
+        )
+      );
     } else {
       handleError(response.message || "Failed to send message");
       setMessages((prevMessages) =>
@@ -177,8 +189,10 @@ export default function ChatPage() {
   const filteredUsers = users.filter(
     (user) =>
       currentUser &&
+      searchTerm &&
       user.user_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  console.log("Filtered users", filteredUsers);
 
   return (
     <div className="flex h-screen antialiased text-slate-200 bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950">
@@ -214,32 +228,43 @@ export default function ChatPage() {
             <UserListSkeleton />
           ) : (
             <ul className="p-3 space-y-1.5">
-              {filteredUsers.map((user) => (
-                <UserListItem
-                  key={user.id}
-                  user={user}
-                  onSelectUser={handleSelectUser}
-                  isSelected={selectedUser?.id === user.id}
-                />
-              ))}
-              {filteredUsers.length === 0 &&
-                !(isLoading && users.length === 0) && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mb-4">
-                      <FaUserAlt className="text-slate-500 text-xl" />
-                    </div>
-                    <p className="text-slate-400 text-sm">
-                      {users.length > 0
-                        ? "No contacts match your search"
-                        : "No contacts available"}
-                    </p>
-                    {users.length > 0 && (
-                      <p className="text-slate-500 text-xs mt-1">
-                        Try adjusting your search
-                      </p>
-                    )}
+              {filteredUsers && filteredUsers.length > 0
+                ? filteredUsers.map((filUsers) => (
+                    <UserListItem
+                      key={filUsers.id}
+                      user={filUsers}
+                      onSelectUser={handleSelectUser}
+                      isSelected={selectedUser?.id === filUsers.id}
+                    />
+                  ))
+                : users.map(
+                    (user) =>
+                      user.last_message && (
+                        <UserListItem
+                          key={user.id}
+                          user={user}
+                          onSelectUser={handleSelectUser}
+                          isSelected={selectedUser?.id === user.id}
+                        />
+                      )
+                  )}
+              {users.length === 0 && !(isLoading && users.length === 0) && (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mb-4">
+                    <FaUserAlt className="text-slate-500 text-xl" />
                   </div>
-                )}
+                  <p className="text-slate-400 text-sm">
+                    {users.length > 0
+                      ? "No contacts match your search"
+                      : "No contacts available"}
+                  </p>
+                  {users.length > 0 && (
+                    <p className="text-slate-500 text-xs mt-1">
+                      Try adjusting your search
+                    </p>
+                  )}
+                </div>
+              )}
             </ul>
           )}
         </div>

@@ -9,6 +9,8 @@ export interface User {
   image_url?: string;
   is_online: boolean;
   email: string;
+  last_message?: string | null;
+  last_message_time?: Date | null;
 }
 
 export interface Message {

@@ -1,4 +1,5 @@
 import { UserListItemProps } from "@/constants/constants";
+import { formatTimeStamp } from "@/utils/utils";
 import { FaUserAlt } from "react-icons/fa";
 
 export const UserListItem = ({
@@ -9,9 +10,11 @@ export const UserListItem = ({
   <li
     onClick={() => onSelectUser(user)}
     className={`flex items-center p-3 space-x-3.5 cursor-pointer rounded-xl transition-all duration-200 ease-in-out group
-                ${
-                  isSelected ? "bg-sky-600 shadow-lg" : "hover:bg-slate-700/60"
-                }`}
+                  ${
+                    isSelected
+                      ? "bg-sky-600 shadow-lg"
+                      : "hover:bg-slate-700/60"
+                  }`}
   >
     <div className="relative flex-shrink-0">
       {user.image_url ? (
@@ -35,6 +38,20 @@ export const UserListItem = ({
       >
         {user.user_name}
       </p>
+      {user.last_message && (
+        <p
+          className={`text-xs truncate ${
+            isSelected ? "text-slate-200" : "text-slate-400"
+          }`}
+        >
+          {user.last_message}
+        </p>
+      )}
     </div>
+    {user.last_message_time && (
+      <div className="text-xs text-slate-400">
+        {formatTimeStamp(new Date(user.last_message_time))}
+      </div>
+    )}
   </li>
 );
