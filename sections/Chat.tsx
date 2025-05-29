@@ -1,13 +1,14 @@
 "use client";
 import { getAllUsers } from "@/actions/serverActions";
 import { logout, UserInfo } from "@/store/authSlice";
+import { RootState } from "@/store/ReduxProvider";
 import { handleError, handleSuccess } from "@/utils/utils";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef, ChangeEvent, FormEvent } from "react";
 import { FaArrowLeft, FaSearch, FaUserAlt } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { IoSend, IoSettingsOutline } from "react-icons/io5";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 interface User {
   id: number;
@@ -38,6 +39,7 @@ export default function ChatPage() {
   const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState<boolean>(false);
+  const { token } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     setCurrentUser(
@@ -58,7 +60,7 @@ export default function ChatPage() {
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        const response = await getAllUsers();
+        const response = await getAllUsers(token!);
         console.log("User data", response);
         if (response.status === "success") {
           setUsers(response.users);
