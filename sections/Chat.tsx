@@ -5,7 +5,7 @@ import { LoadingContacts } from "@/components/LoadingSpinner";
 import { NoChatSelectedView } from "@/components/NoChatSelectedView";
 import { UserListItem } from "@/components/UserListItem";
 import UserListSkeleton from "@/components/UserListSkeleton";
-import { Message, User, UserInfo } from "@/constants/constants";
+import { API_URL, Message, User, UserInfo } from "@/constants/constants";
 import { logout } from "@/store/authSlice";
 import { RootState } from "@/store/ReduxProvider";
 import { handleError, handleSuccess } from "@/utils/utils";
@@ -15,6 +15,9 @@ import { FaSearch, FaUserAlt } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
+import { io, Socket } from "socket.io-client";
+
+var socket: Socket;
 
 export default function ChatPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -24,6 +27,7 @@ export default function ChatPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileView, setIsMobileView] = useState(false);
   const [showChatViewMobile, setShowChatViewMobile] = useState(false);
+  const [socketConnected, setSocketConnected] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(
     null
   ) as React.RefObject<HTMLDivElement>;
@@ -93,6 +97,7 @@ export default function ChatPage() {
           const response = await getMessages(token!, selectedUser.id);
           if (response.status === "success") {
             setMessages(response.data);
+            socket.emit("join chat", selectedUser.id);
           } else {
             handleError(response.message || "Failed to load messages");
 
@@ -193,6 +198,12 @@ export default function ChatPage() {
       user.user_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   console.log("Filtered users", filteredUsers);
+
+  useEffect(() => {
+    socket = io(API_URL);
+    socket.emit("setup", currentUser);
+    socket.on("connection", () => setSocketConnected(true));
+  }, [currentUser]);
 
   return (
     <div className="flex h-screen antialiased text-slate-200 bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950">
