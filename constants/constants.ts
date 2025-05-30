@@ -38,6 +38,9 @@ export interface ChatViewProps {
   handleSendMessage: (e: FormEvent) => void;
   newMessage: string;
   setNewMessage: (message: string) => void;
+  isTyping: boolean;
+  handleTyping: () => void;
+  handleStopTyping: () => void;
 }
 
 export interface UserInfo {

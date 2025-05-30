@@ -1,5 +1,5 @@
 "use client";
-import { getAllUsers, getMessages, sendMessage } from "@/actions/serverActions";
+import { getAllUsers, getMessages } from "@/actions/serverActions";
 import { ChatView } from "@/components/ChatView";
 import { LoadingContacts } from "@/components/LoadingSpinner";
 import { NoChatSelectedView } from "@/components/NoChatSelectedView";
@@ -17,8 +17,6 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { io, Socket } from "socket.io-client";
 
-var socket: Socket;
-
 export default function ChatPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -32,12 +30,13 @@ export default function ChatPage() {
     null
   ) as React.RefObject<HTMLDivElement>;
   const dispatch = useDispatch();
+  const socketRef = useRef<Socket | null>(null);
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState<boolean>(false);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
   const { token } = useSelector((state: RootState) => state.auth);
-  console.log("users", users);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -63,11 +62,91 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    if (!token) {
-      handleError("Authentication token not found. Please log in.");
-      router.push("/login");
-      return;
-    }
+    socketRef.current = io(API_URL, {
+      auth: { token: token ? `Bearer ${token}` : null },
+    });
+
+    const socket = socketRef.current;
+
+    socket.on("connect", () => {
+      setSocketConnected(true);
+      socket.emit("setup");
+    });
+
+    socket.on("users", (users: User[]) => {
+      setUsers(users);
+    });
+
+    socket.on(
+      "userStatus",
+      ({ userId, isOnline }: { userId: number; isOnline: boolean }) => {
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.id === userId ? { ...user, isOnline } : user
+          )
+        );
+      }
+    );
+
+    socket.on("message", (message: Message) => {
+      if (
+        selectedUser &&
+        (message.senderId === selectedUser.id ||
+          message.senderId === currentUser?.id)
+      ) {
+        setMessages((prev) => [
+          ...prev,
+          { ...message, timestamp: new Date(message.timestamp) },
+        ]);
+      }
+    });
+
+    socket.on("userUpdate", ({ userId, last_message, last_message_time }) => {
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                last_message,
+                last_message_time: new Date(last_message_time),
+              }
+            : user
+        )
+      );
+    });
+
+    socket.on("typing", ({ userId }) => {
+      if (selectedUser && userId === selectedUser.id) {
+        setIsTyping(true);
+      }
+    });
+
+    socket.on("stopTyping", ({ userId }) => {
+      if (selectedUser && userId === selectedUser.id) {
+        setIsTyping(false);
+      }
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("Socket error:", error.message);
+      if (error.message.includes("token")) {
+        dispatch(logout());
+        router.push("/login");
+      }
+    });
+
+    socket.on("error", ({ message }) => {
+      handleError(message);
+    });
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [token, currentUser, router, dispatch, selectedUser]);
+
+  useEffect(() => {
+    if (!token) return;
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
@@ -97,7 +176,7 @@ export default function ChatPage() {
           const response = await getMessages(token!, selectedUser.id);
           if (response.status === "success") {
             setMessages(response.data);
-            socket.emit("join chat", selectedUser.id);
+            socketRef.current?.emit("joinChat", selectedUser.id);
           } else {
             handleError(response.message || "Failed to load messages");
 
@@ -151,37 +230,23 @@ export default function ChatPage() {
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() === "" || !selectedUser || !currentUser) return;
-    const myMessage: Message = {
-      id: Date.now(),
-      senderId: currentUser.id,
+
+    socketRef.current?.emit("sendMessage", {
+      receiverId: selectedUser.id,
       text: newMessage,
-      timestamp: new Date(),
-    };
-    setMessages((prevMessages) => [...prevMessages, myMessage]);
+    });
     setNewMessage("");
-    const response = await sendMessage(token!, selectedUser.id, newMessage);
-    if (response.status === "success") {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.id === myMessage.id ? { ...msg, id: response.data.id } : msg
-        )
-      );
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === selectedUser.id
-            ? {
-                ...user,
-                last_message: newMessage,
-                last_message_timestamp: new Date(),
-              }
-            : user
-        )
-      );
-    } else {
-      handleError(response.message || "Failed to send message");
-      setMessages((prevMessages) =>
-        prevMessages.filter((msg) => msg.id !== myMessage.id)
-      );
+  };
+
+  const handleTyping = () => {
+    if (selectedUser && socketConnected) {
+      socketRef.current?.emit("typing", { receiverId: selectedUser.id });
+    }
+  };
+
+  const handleStopTyping = () => {
+    if (selectedUser && socketConnected) {
+      socketRef.current?.emit("stopTyping", { receiverId: selectedUser.id });
     }
   };
 
@@ -197,13 +262,6 @@ export default function ChatPage() {
       searchTerm &&
       user.user_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  console.log("Filtered users", filteredUsers);
-
-  useEffect(() => {
-    socket = io(API_URL);
-    socket.emit("setup", currentUser);
-    socket.on("connection", () => setSocketConnected(true));
-  }, [currentUser]);
 
   return (
     <div className="flex h-screen antialiased text-slate-200 bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950">
@@ -351,6 +409,9 @@ export default function ChatPage() {
             handleSendMessage={handleSendMessage}
             newMessage={newMessage}
             setNewMessage={setNewMessage}
+            handleTyping={handleTyping}
+            handleStopTyping={handleStopTyping}
+            isTyping={isTyping}
           />
         ) : (
           <NoChatSelectedView key="nochat_placeholder" />
