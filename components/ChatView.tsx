@@ -2,6 +2,7 @@ import { FaArrowLeft, FaUserAlt } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { Message, User, UserInfo } from "@/constants/constants";
 import { ChangeEvent, FormEvent } from "react";
+import Image from "next/image";
 
 interface ChatViewProps {
   isMobileView: boolean;
@@ -51,10 +52,12 @@ export function ChatView({
           </button>
         )}
         {selectedUser.image_url ? (
-          <img
+          <Image
             src={selectedUser.image_url}
             alt={selectedUser.user_name}
-            className="w-10 h-10 rounded-full mr-3 object-cover"
+            className="rounded-full mr-3 object-cover"
+            width={40}
+            height={40}
           />
         ) : (
           <FaUserAlt className="w-10 h-10 text-slate-500 mr-3" />

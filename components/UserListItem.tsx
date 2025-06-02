@@ -1,5 +1,6 @@
 import { UserListItemProps } from "@/constants/constants";
 import { formatTimeStamp } from "@/utils/utils";
+import Image from "next/image";
 import { FaUserAlt } from "react-icons/fa";
 
 export const UserListItem = ({
@@ -18,10 +19,12 @@ export const UserListItem = ({
   >
     <div className="relative flex-shrink-0">
       {user.image_url ? (
-        <img
+        <Image
           src={user.image_url}
           alt={user.user_name}
-          className="w-11 h-11 rounded-full object-cover border-2 border-transparent group-hover:border-sky-700 transition-all duration-200"
+          className="rounded-full object-cover border-2 border-transparent group-hover:border-sky-700 transition-all duration-200"
+          width={44}
+          height={44}
         />
       ) : (
         <FaUserAlt className="w-11 h-11 text-slate-500" />

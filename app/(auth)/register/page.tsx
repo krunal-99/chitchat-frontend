@@ -51,7 +51,7 @@ export default function RegisterPage() {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
       confirmPassword: formData.get("confirm-password") as string,
-      profilePicture: selectedFile || (undefined as any),
+      profilePicture: selectedFile as File,
     };
 
     const result = registerSchema.safeParse(data);

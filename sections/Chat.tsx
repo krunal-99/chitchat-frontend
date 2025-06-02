@@ -9,6 +9,7 @@ import { API_URL, Message, User, UserInfo } from "@/constants/constants";
 import { logout } from "@/store/authSlice";
 import { RootState } from "@/store/ReduxProvider";
 import { handleError, handleSuccess } from "@/utils/utils";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef, ChangeEvent, FormEvent } from "react";
 import { FaSearch, FaUserAlt } from "react-icons/fa";
@@ -359,10 +360,12 @@ export default function ChatPage() {
                 }
               >
                 {currentUser.image_url ? (
-                  <img
+                  <Image
                     src={currentUser.image_url}
                     alt={currentUser.user_name}
-                    className="w-10 h-10 rounded-full object-cover transition-transform duration-300 group-hover:scale-105 ring-2 ring-transparent group-hover:ring-sky-400"
+                    className="rounded-full object-cover transition-transform duration-300 group-hover:scale-105 ring-2 ring-transparent group-hover:ring-sky-400"
+                    width={40}
+                    height={40}
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-slate-600 flex items-center justify-center text-slate-300 group-hover:ring-sky-400 ring-2 ring-transparent">
