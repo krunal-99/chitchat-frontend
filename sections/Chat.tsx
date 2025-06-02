@@ -238,6 +238,7 @@ export default function ChatPage() {
       text: newMessage,
     });
     setNewMessage("");
+    (e.target as HTMLFormElement).querySelector("input")?.blur();
   };
 
   const handleTyping = () => {
