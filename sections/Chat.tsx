@@ -63,7 +63,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     socketRef.current = io(API_URL, {
-      auth: { token: token ? `Bearer ${token}` : null },
+      auth: { token: `Bearer ${token}` },
     });
 
     const socket = socketRef.current;
@@ -82,7 +82,7 @@ export default function ChatPage() {
       ({ userId, isOnline }: { userId: number; isOnline: boolean }) => {
         setUsers((prev) =>
           prev.map((user) =>
-            user.id === userId ? { ...user, isOnline } : user
+            user.id === userId ? { ...user, is_online: isOnline } : user
           )
         );
       }
@@ -299,19 +299,19 @@ export default function ChatPage() {
             <UserListSkeleton />
           ) : (
             <ul className="p-3 space-y-1.5">
-              {filteredUsers && filteredUsers.length > 0
-                ? filteredUsers.map((filUsers) => (
+              {filteredUsers.length > 0
+                ? filteredUsers.map((user) => (
                     <UserListItem
-                      key={filUsers.id}
-                      user={filUsers}
+                      key={user.id}
+                      user={user}
                       onSelectUser={handleSelectUser}
-                      isSelected={selectedUser?.id === filUsers.id}
+                      isSelected={selectedUser?.id === user.id}
                     />
                   ))
                 : users
                     .sort((a, b) => {
-                      if (!a.last_message) return 1;
-                      if (!b.last_message) return -1;
+                      if (!a.last_message_time) return 1;
+                      if (!b.last_message_time) return -1;
                       return (
                         new Date(b.last_message_time!).getTime() -
                         new Date(a.last_message_time!).getTime()
@@ -325,7 +325,7 @@ export default function ChatPage() {
                         isSelected={selectedUser?.id === user.id}
                       />
                     ))}
-              {users.length === 0 && !(isLoading && users.length === 0) && (
+              {users.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mb-4">
                     <FaUserAlt className="text-slate-500 text-xl" />
