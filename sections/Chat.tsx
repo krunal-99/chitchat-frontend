@@ -102,17 +102,19 @@ export default function ChatPage() {
     });
 
     socket.on("userUpdate", ({ userId, last_message, last_message_time }) => {
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === userId
-            ? {
-                ...user,
-                last_message,
-                last_message_time: new Date(last_message_time),
-              }
-            : user
-        )
-      );
+      if (userId !== currentUser?.id) {
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.id === userId
+              ? {
+                  ...user,
+                  last_message,
+                  last_message_time: new Date(last_message_time),
+                }
+              : user
+          )
+        );
+      }
     });
 
     socket.on("typing", ({ userId }) => {
@@ -306,17 +308,23 @@ export default function ChatPage() {
                       isSelected={selectedUser?.id === filUsers.id}
                     />
                   ))
-                : users.map(
-                    (user) =>
-                      user.last_message && (
-                        <UserListItem
-                          key={user.id}
-                          user={user}
-                          onSelectUser={handleSelectUser}
-                          isSelected={selectedUser?.id === user.id}
-                        />
-                      )
-                  )}
+                : users
+                    .sort((a, b) => {
+                      if (!a.last_message) return 1;
+                      if (!b.last_message) return -1;
+                      return (
+                        new Date(b.last_message_time!).getTime() -
+                        new Date(a.last_message_time!).getTime()
+                      );
+                    })
+                    .map((user) => (
+                      <UserListItem
+                        key={user.id}
+                        user={user}
+                        onSelectUser={handleSelectUser}
+                        isSelected={selectedUser?.id === user.id}
+                      />
+                    ))}
               {users.length === 0 && !(isLoading && users.length === 0) && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mb-4">
