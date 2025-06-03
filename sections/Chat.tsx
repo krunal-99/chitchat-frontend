@@ -78,58 +78,6 @@ export default function ChatPage() {
       setUsers(users);
     });
 
-    socket.on(
-      "userStatus",
-      ({ userId, isOnline }: { userId: number; isOnline: boolean }) => {
-        setUsers((prev) =>
-          prev.map((user) =>
-            user.id === userId ? { ...user, is_online: isOnline } : user
-          )
-        );
-      }
-    );
-
-    socket.on("message", (message: Message) => {
-      if (
-        selectedUser &&
-        (message.senderId === selectedUser.id ||
-          message.senderId === currentUser?.id)
-      ) {
-        setMessages((prev) => [
-          ...prev,
-          { ...message, timestamp: new Date(message.timestamp) },
-        ]);
-      }
-    });
-
-    socket.on("userUpdate", ({ userId, last_message, last_message_time }) => {
-      if (userId !== currentUser?.id) {
-        setUsers((prev) =>
-          prev.map((user) =>
-            user.id === userId
-              ? {
-                  ...user,
-                  last_message,
-                  last_message_time: new Date(last_message_time),
-                }
-              : user
-          )
-        );
-      }
-    });
-
-    socket.on("typing", ({ userId }) => {
-      if (selectedUser && userId === selectedUser.id) {
-        setIsTyping(true);
-      }
-    });
-
-    socket.on("stopTyping", ({ userId }) => {
-      if (selectedUser && userId === selectedUser.id) {
-        setIsTyping(false);
-      }
-    });
-
     socket.on("connect_error", (error) => {
       console.error("Socket error:", error.message);
       if (error.message.includes("token")) {
@@ -146,7 +94,95 @@ export default function ChatPage() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [token, currentUser, router, dispatch, selectedUser]);
+  }, [token, router, dispatch]);
+
+  useEffect(() => {
+    if (!socketRef.current) return;
+
+    const socket = socketRef.current;
+
+    const handleUserStatus = ({
+      userId,
+      isOnline,
+    }: {
+      userId: number;
+      isOnline: boolean;
+    }) => {
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, is_online: isOnline } : user
+        )
+      );
+      if (selectedUser && selectedUser.id === userId) {
+        setSelectedUser((prev) =>
+          prev ? { ...prev, is_online: isOnline } : null
+        );
+      }
+    };
+
+    const handleMessage = (message: Message) => {
+      if (
+        selectedUser &&
+        (message.senderId === selectedUser.id ||
+          message.senderId === currentUser?.id)
+      ) {
+        setMessages((prev) => [
+          ...prev,
+          { ...message, timestamp: new Date(message.timestamp) },
+        ]);
+      }
+    };
+
+    const handleUserUpdate = ({
+      userId,
+      last_message,
+      last_message_time,
+    }: {
+      userId: number;
+      last_message: string;
+      last_message_time: Date;
+    }) => {
+      if (userId !== currentUser?.id) {
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.id === userId
+              ? {
+                  ...user,
+                  last_message,
+                  last_message_time: new Date(last_message_time),
+                }
+              : user
+          )
+        );
+      }
+    };
+
+    const handleTyping = ({ userId }: { userId: number }) => {
+      if (selectedUser && userId === selectedUser.id) {
+        setIsTyping(true);
+      }
+    };
+
+    const handleStopTyping = ({ userId }: { userId: number }) => {
+      if (selectedUser && userId === selectedUser.id) {
+        setIsTyping(false);
+      }
+    };
+
+    socket.on("userStatus", handleUserStatus);
+    socket.on("message", handleMessage);
+    socket.on("userUpdate", handleUserUpdate);
+    socket.on("typing", handleTyping);
+    socket.on("stopTyping", handleStopTyping);
+
+    return () => {
+      socket.off("userStatus", handleUserStatus);
+      socket.off("message", handleMessage);
+      socket.off("userUpdate", handleUserUpdate);
+      socket.off("typing", handleTyping);
+      socket.off("stopTyping", handleStopTyping);
+    };
+  }, [selectedUser, currentUser]);
 
   useEffect(() => {
     if (!token) return;
