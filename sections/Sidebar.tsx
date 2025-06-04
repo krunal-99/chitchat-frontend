@@ -79,8 +79,8 @@ const Sidebar: React.FC<SideBarProps> = ({
     >
       {isLoading && users.length === 0 && <LoadingContacts />}
       <div className="p-4 border-b border-slate-700/50">
-        <h1 className="text-2xl font-bold text-sky-500 tracking-tight">
-          ChitChat
+        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-500 to-indigo-600 text-transparent bg-clip-text transition-all duration-300 ease-in-out">
+          Chit<span className="text-slate-100 drop-shadow-md">Chat</span>
         </h1>
         <div className="relative mt-4">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
