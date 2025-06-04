@@ -1,5 +1,4 @@
-import { FormEvent } from "react";
-
+import { FormEvent, Dispatch, SetStateAction } from "react";
 export const formFields = ["username", "email"];
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -54,4 +53,16 @@ export interface AuthState {
   isAuthenticated: boolean;
   user: UserInfo | null;
   token: string | null;
+}
+
+export interface SideBarProps {
+  token: string | null;
+  setUsers: Dispatch<SetStateAction<User[]>>;
+  selectedUser: User | null;
+  setSelectedUser: Dispatch<SetStateAction<User | null>>;
+  isMobileView: boolean;
+  users: User[];
+  currentUser: UserInfo | null;
+  setShowChatViewMobile: Dispatch<SetStateAction<boolean>>;
+  showChatViewMobile: boolean;
 }

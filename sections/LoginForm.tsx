@@ -1,3 +1,4 @@
+"use client";
 import { handleLogin } from "@/actions/serverActions";
 import { login } from "@/store/authSlice";
 import { handleError, handleSuccess } from "@/utils/utils";
