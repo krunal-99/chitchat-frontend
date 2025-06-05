@@ -11,6 +11,7 @@ import { useState, useEffect, useRef, FormEvent } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io, Socket } from "socket.io-client";
 import Sidebar from "./Sidebar";
+
 export default function ChatPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -102,10 +103,16 @@ export default function ChatPage() {
         (message.senderId === selectedUser.id ||
           message.senderId === currentUser?.id)
       ) {
-        setMessages((prev) => [
-          ...prev,
-          { ...message, timestamp: new Date(message.timestamp) },
-        ]);
+        setMessages((prev) => {
+          const messageExists = prev.some((m) => m.id === message.id);
+          if (messageExists) {
+            return prev;
+          }
+          return [
+            ...prev,
+            { ...message, timestamp: new Date(message.timestamp) },
+          ];
+        });
       }
     };
     const handleUserUpdate = ({
