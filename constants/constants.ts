@@ -3,7 +3,7 @@ export const formFields = ["username", "email"];
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export interface User {
-  id: number;
+  id: number | string;
   user_name: string;
   image_url?: string;
   is_online: boolean;
@@ -14,7 +14,7 @@ export interface User {
 
 export interface Message {
   id: number;
-  senderId: number;
+  senderId: number | string;
   text: string;
   timestamp: Date;
 }
@@ -66,3 +66,13 @@ export interface SideBarProps {
   setShowChatViewMobile: Dispatch<SetStateAction<boolean>>;
   showChatViewMobile: boolean;
 }
+
+export const AI_USER: User = {
+  id: "ai",
+  user_name: "ChitChat AI",
+  image_url: "/ai.png",
+  is_online: true,
+  email: "ai@chitchat.com",
+  last_message: null,
+  last_message_time: null,
+};

@@ -4,8 +4,7 @@ import { LoadingContacts } from "@/components/LoadingSpinner";
 import Image from "next/image";
 import { FaSearch, FaUserAlt } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
-import { IoSettingsOutline } from "react-icons/io5";
-import { SideBarProps, User } from "@/constants/constants";
+import { SideBarProps, User, AI_USER } from "@/constants/constants";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { logout } from "@/store/authSlice";
@@ -197,11 +196,20 @@ const Sidebar: React.FC<SideBarProps> = ({
               </span>
             </div>
             <button
-              onClick={() => alert("Navigate to profile settings")}
               className="p-2 rounded-full hover:bg-slate-700 transition-colors cursor-pointer"
-              title="Profile Settings"
+              title="AI Assistant"
+              onClick={() => {
+                setSelectedUser(AI_USER);
+                setShowChatViewMobile(true);
+              }}
             >
-              <IoSettingsOutline size={20} />
+              <Image
+                src="/ai.png"
+                width={30}
+                height={30}
+                alt="AI Assistant"
+                className="invert group-hover:invert-0"
+              />
             </button>
           </div>
         )}

@@ -71,3 +71,14 @@ export async function getMessages(token: string, selectedUserId: number) {
     };
   }
 }
+
+export async function getAIChatResponse(message: string) {
+  const res = await fetch(`${API_URL}/api/ai/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+  });
+  if (!res.ok) throw new Error("AI request failed");
+  const data = await res.json();
+  return data.response;
+}

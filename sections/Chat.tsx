@@ -1,5 +1,5 @@
 "use client";
-import { getMessages } from "@/actions/serverActions";
+import { getMessages, getAIChatResponse } from "@/actions/serverActions";
 import { ChatView } from "@/components/ChatView";
 import { NoChatSelectedView } from "@/components/NoChatSelectedView";
 import { API_URL, Message, User, UserInfo } from "@/constants/constants";
@@ -161,12 +161,14 @@ export default function ChatPage() {
       setMessages([]);
       const fetchMessages = async () => {
         try {
-          const response = await getMessages(token!, selectedUser.id);
-          if (response.status === "success") {
-            setMessages(response.data);
-            socketRef.current?.emit("joinChat", selectedUser.id);
-          } else {
-            handleError(response.message || "Failed to load messages");
+          if (typeof selectedUser.id === "number") {
+            const response = await getMessages(token!, selectedUser.id);
+            if (response.status === "success") {
+              setMessages(response.data);
+              socketRef.current?.emit("joinChat", selectedUser.id);
+            } else {
+              handleError(response.message || "Failed to load messages");
+            }
           }
         } catch (error) {
           console.error("Error fetching messages:", error);
@@ -192,6 +194,46 @@ export default function ChatPage() {
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() === "" || !selectedUser || !currentUser) return;
+    if (selectedUser.id === "ai") {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          senderId: currentUser.id,
+          text: newMessage,
+          timestamp: new Date(),
+        },
+      ]);
+      setNewMessage("");
+      (e.target as HTMLFormElement).querySelector("input")?.blur();
+      setIsTyping(true);
+      try {
+        const aiText = await getAIChatResponse(newMessage);
+        console.log("aiText", aiText);
+        setIsTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            senderId: "ai",
+            text: aiText,
+            timestamp: new Date(),
+          },
+        ]);
+      } catch {
+        setIsTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            senderId: "ai",
+            text: "Sorry, I couldn't get a response from Gemini AI.",
+            timestamp: new Date(),
+          },
+        ]);
+      }
+      return;
+    }
     socketRef.current?.emit("sendMessage", {
       receiverId: selectedUser.id,
       text: newMessage,
@@ -210,6 +252,7 @@ export default function ChatPage() {
       socketRef.current?.emit("stopTyping", { receiverId: selectedUser.id });
     }
   };
+
   return (
     <div className="flex h-screen antialiased text-slate-200 bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950">
       <Sidebar
