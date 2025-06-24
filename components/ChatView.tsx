@@ -146,8 +146,7 @@ export function ChatView({
                 <br />
                 <span className="text-sky-400">Try asking:</span>{" "}
                 <span className="italic">Tell me a joke</span> or{" "}
-                <span className="italic">Summarize the latest tech news</span>
-                .
+                <span className="italic">Summarize the latest tech news</span>.
               </p>
               <div className="mt-6 flex flex-wrap gap-3 justify-center">
                 <span className="px-4 py-2 bg-sky-700/80 rounded-full text-slate-100 text-sm shadow">
