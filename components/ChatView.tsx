@@ -3,6 +3,7 @@ import { IoSend } from "react-icons/io5";
 import { Message, User, UserInfo, AI_USER } from "@/constants/constants";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
 
 interface ChatViewProps {
   isMobileView: boolean;
@@ -101,9 +102,15 @@ export function ChatView({
                       : "bg-slate-700 text-slate-100 rounded-r-xl"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap break-words">
-                    {msg.text}
-                  </p>
+                  {msg.senderId === "ai" ? (
+                    <div className="prose prose-invert max-w-none prose-pre:bg-slate-800 prose-pre:text-slate-100 prose-code:bg-slate-800 prose-code:text-sky-300 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-strong:font-bold prose-em:italic prose-li:marker:text-sky-400">
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap break-words">
+                      {msg.text}
+                    </p>
+                  )}
                   <p
                     className={`text-[10px] mt-1.5 opacity-80 ${
                       msg.senderId === currentUser?.id
@@ -258,9 +265,15 @@ export function ChatView({
                     : "bg-slate-700 text-slate-100 rounded-r-xl"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap break-words">
-                  {msg.text}
-                </p>
+                {msg.senderId === "ai" ? (
+                  <div className="prose prose-invert max-w-none prose-pre:bg-slate-800 prose-pre:text-slate-100 prose-code:bg-slate-800 prose-code:text-sky-300 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-strong:font-bold prose-em:italic prose-li:marker:text-sky-400">
+                    <ReactMarkdown>{msg.text}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap break-words">
+                    {msg.text}
+                  </p>
+                )}
                 <p
                   className={`text-[10px] mt-1.5 opacity-80 ${
                     msg.senderId === currentUser?.id
