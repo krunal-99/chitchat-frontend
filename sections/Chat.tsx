@@ -158,7 +158,6 @@ export default function ChatPage() {
   useEffect(() => {
     if (selectedUser && currentUser && token) {
       setIsMessagesLoading(true);
-      setMessages([]);
       const fetchMessages = async () => {
         try {
           if (typeof selectedUser.id === "number") {
@@ -195,31 +194,33 @@ export default function ChatPage() {
     e.preventDefault();
     if (newMessage.trim() === "" || !selectedUser || !currentUser) return;
     if (selectedUser.id === "ai") {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          senderId: currentUser.id,
-          text: newMessage,
-          timestamp: new Date(),
-        },
-      ]);
+      const userMessage = {
+        id: Date.now(),
+        senderId: currentUser.id,
+        text: newMessage,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, userMessage]);
       setNewMessage("");
       (e.target as HTMLFormElement).querySelector("input")?.blur();
       setIsTyping(true);
+
       try {
-        const aiText = await getAIChatResponse(newMessage);
-        console.log("aiText", aiText);
+        const chatHistory = messages.map((msg) => ({
+          role: msg.senderId === currentUser.id ? "human" : "assistant",
+          content: msg.text,
+        }));
+
+        const aiText = await getAIChatResponse(newMessage, chatHistory);
         setIsTyping(false);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now() + 1,
-            senderId: "ai",
-            text: aiText,
-            timestamp: new Date(),
-          },
-        ]);
+
+        const aiMessage = {
+          id: Date.now() + 1,
+          senderId: "ai",
+          text: aiText,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, aiMessage]);
       } catch {
         setIsTyping(false);
         setMessages((prev) => [

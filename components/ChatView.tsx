@@ -37,7 +37,7 @@ export function ChatView({
   handleTyping,
   handleStopTyping,
 }: ChatViewProps) {
-  const [showWelcome, setShowWelcome] = useState<Boolean>(false);
+  const [showWelcome, setShowWelcome] = useState<boolean>(false);
   useEffect(() => {
     if (selectedUser.id === "ai") {
       setShowWelcome(false);
