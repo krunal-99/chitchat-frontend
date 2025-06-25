@@ -4,6 +4,11 @@ import { Message, User, UserInfo, AI_USER } from "@/constants/constants";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 interface ChatViewProps {
   isMobileView: boolean;
@@ -39,6 +44,7 @@ export function ChatView({
   handleStopTyping,
 }: ChatViewProps) {
   const [showWelcome, setShowWelcome] = useState<boolean>(false);
+
   useEffect(() => {
     if (selectedUser.id === "ai") {
       setShowWelcome(false);
@@ -46,6 +52,89 @@ export function ChatView({
       return () => clearTimeout(timer);
     }
   }, [selectedUser]);
+
+  const markdownComponents = {
+    code({ node, inline, className, children, ...props }: any) {
+      const match = /language-(\w+)/.exec(className || "");
+      return !inline && match ? (
+        <SyntaxHighlighter
+          style={oneDark}
+          language={match[1]}
+          PreTag="div"
+          className="rounded-lg overflow-hidden"
+          {...props}
+        >
+          {String(children).replace(/\n$/, "")}
+        </SyntaxHighlighter>
+      ) : (
+        <code
+          className="bg-slate-800 text-sky-300 px-1.5 py-0.5 rounded font-mono text-sm"
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
+    table({ children }: any) {
+      return (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse border border-slate-600">
+            {children}
+          </table>
+        </div>
+      );
+    },
+    thead({ children }: any) {
+      return <thead className="bg-slate-800">{children}</thead>;
+    },
+    th({ children }: any) {
+      return (
+        <th className="border border-slate-600 px-4 py-2 text-sky-400 font-semibold">
+          {children}
+        </th>
+      );
+    },
+    td({ children }: any) {
+      return (
+        <td className="border border-slate-600 px-4 py-2 text-slate-100">
+          {children}
+        </td>
+      );
+    },
+    blockquote({ children }: any) {
+      return (
+        <blockquote className="border-l-4 border-sky-500 pl-4 italic text-slate-200">
+          {children}
+        </blockquote>
+      );
+    },
+    ul({ children }: any) {
+      return (
+        <ul className="list-disc pl-6 space-y-1 text-slate-100">{children}</ul>
+      );
+    },
+    ol({ children }: any) {
+      return (
+        <ol className="list-decimal pl-6 space-y-1 text-slate-100">
+          {children}
+        </ol>
+      );
+    },
+    li({ children }: any) {
+      return <li className="text-slate-100">{children}</li>;
+    },
+    img({ src, alt }: any) {
+      return (
+        <Image
+          src={src}
+          alt={alt}
+          width={600}
+          height={400}
+          className="rounded-lg max-w-full h-auto"
+        />
+      );
+    },
+  };
 
   if (selectedUser.id === "ai") {
     const hasMessages = messages && messages.length > 0;
@@ -103,8 +192,14 @@ export function ChatView({
                   }`}
                 >
                   {msg.senderId === "ai" ? (
-                    <div className="prose prose-invert max-w-none prose-pre:bg-slate-800 prose-pre:text-slate-100 prose-code:bg-slate-800 prose-code:text-sky-300 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-strong:font-bold prose-em:italic prose-li:marker:text-sky-400">
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    <div className="prose prose-invert max-w-none text-sm">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                        components={markdownComponents}
+                      >
+                        {msg.text}
+                      </ReactMarkdown>
                     </div>
                   ) : (
                     <p className="text-sm whitespace-pre-wrap break-words">
@@ -266,8 +361,14 @@ export function ChatView({
                 }`}
               >
                 {msg.senderId === "ai" ? (
-                  <div className="prose prose-invert max-w-none prose-pre:bg-slate-800 prose-pre:text-slate-100 prose-code:bg-slate-800 prose-code:text-sky-300 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-strong:font-bold prose-em:italic prose-li:marker:text-sky-400">
-                    <ReactMarkdown>{msg.text}</ReactMarkdown>
+                  <div className="prose prose-invert max-w-none text-sm">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                      components={markdownComponents}
+                    >
+                      {msg.text}
+                    </ReactMarkdown>
                   </div>
                 ) : (
                   <p className="text-sm whitespace-pre-wrap break-words">
