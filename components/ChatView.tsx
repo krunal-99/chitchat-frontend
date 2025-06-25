@@ -1,7 +1,7 @@
 import { FaArrowLeft, FaUserAlt } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
-import { Message, User, UserInfo, AI_USER } from "@/constants/constants";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { AI_USER, ChatViewProps } from "@/constants/constants";
+import { ChangeEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -9,23 +9,6 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
-
-interface ChatViewProps {
-  isMobileView: boolean;
-  selectedUser: User;
-  setSelectedUser: (user: User | null) => void;
-  setShowChatViewMobile: (show: boolean) => void;
-  currentUser: UserInfo | null;
-  isMessagesLoading: boolean;
-  messages: Message[];
-  messagesEndRef: React.RefObject<HTMLDivElement>;
-  handleSendMessage: (e: FormEvent) => void;
-  newMessage: string;
-  setNewMessage: (message: string) => void;
-  isTyping: boolean;
-  handleTyping: () => void;
-  handleStopTyping: () => void;
-}
 
 export function ChatView({
   isMobileView,
@@ -44,6 +27,19 @@ export function ChatView({
   handleStopTyping,
 }: ChatViewProps) {
   const [showWelcome, setShowWelcome] = useState<boolean>(false);
+  const [streamingMessage, setStreamingMessage] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (streamingMessage && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [streamingMessage, messages]);
+
+  useEffect(() => {
+    setStreamingMessage(null);
+    setIsStreaming(false);
+  }, [selectedUser]);
 
   useEffect(() => {
     if (selectedUser.id === "ai") {

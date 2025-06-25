@@ -76,3 +76,20 @@ export const AI_USER: User = {
   last_message: null,
   last_message_time: null,
 };
+
+export interface ChatViewProps {
+  isMobileView: boolean;
+  selectedUser: User;
+  setSelectedUser: (user: User | null) => void;
+  setShowChatViewMobile: (show: boolean) => void;
+  currentUser: UserInfo | null;
+  isMessagesLoading: boolean;
+  messages: Message[];
+  messagesEndRef: React.RefObject<HTMLDivElement>;
+  handleSendMessage: (e: FormEvent) => void;
+  newMessage: string;
+  setNewMessage: (message: string) => void;
+  isTyping: boolean;
+  handleTyping: () => void;
+  handleStopTyping: () => void;
+}
