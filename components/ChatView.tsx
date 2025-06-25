@@ -54,7 +54,7 @@ export function ChatView({
   }, [selectedUser]);
 
   const markdownComponents = {
-    code({ node, inline, className, children, ...props }: any) {
+    code({ inline, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
       return !inline && match ? (
         <SyntaxHighlighter
@@ -75,7 +75,7 @@ export function ChatView({
         </code>
       );
     },
-    table({ children }: any) {
+    table({ children }) {
       return (
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse border border-slate-600">
@@ -84,46 +84,46 @@ export function ChatView({
         </div>
       );
     },
-    thead({ children }: any) {
+    thead({ children }) {
       return <thead className="bg-slate-800">{children}</thead>;
     },
-    th({ children }: any) {
+    th({ children }) {
       return (
         <th className="border border-slate-600 px-4 py-2 text-sky-400 font-semibold">
           {children}
         </th>
       );
     },
-    td({ children }: any) {
+    td({ children }) {
       return (
         <td className="border border-slate-600 px-4 py-2 text-slate-100">
           {children}
         </td>
       );
     },
-    blockquote({ children }: any) {
+    blockquote({ children }) {
       return (
         <blockquote className="border-l-4 border-sky-500 pl-4 italic text-slate-200">
           {children}
         </blockquote>
       );
     },
-    ul({ children }: any) {
+    ul({ children }) {
       return (
         <ul className="list-disc pl-6 space-y-1 text-slate-100">{children}</ul>
       );
     },
-    ol({ children }: any) {
+    ol({ children }) {
       return (
         <ol className="list-decimal pl-6 space-y-1 text-slate-100">
           {children}
         </ol>
       );
     },
-    li({ children }: any) {
+    li({ children }) {
       return <li className="text-slate-100">{children}</li>;
     },
-    img({ src, alt }: any) {
+    img({ src, alt }) {
       return (
         <Image
           src={src}
