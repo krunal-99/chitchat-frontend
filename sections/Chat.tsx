@@ -192,18 +192,26 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    if (newMessage.trim() === "" || !selectedUser || !currentUser) return;
+    if (!newMessage.trim() || !selectedUser || !currentUser) return;
+
     if (selectedUser.id === "ai") {
-      const userMessage = {
-        id: Date.now(),
-        senderId: currentUser.id,
-        text: newMessage,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, userMessage]);
+      const userMessageText = newMessage;
       setNewMessage("");
       (e.target as HTMLFormElement).querySelector("input")?.blur();
-      setIsTyping(true);
+
+      const userMessage: Message = {
+        id: Date.now(),
+        senderId: currentUser.id,
+        text: userMessageText,
+        timestamp: new Date(),
+      };
+      const aiMessagePlaceholder: Message = {
+        id: Date.now() + 1,
+        senderId: "ai",
+        text: "Thinking...",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, userMessage, aiMessagePlaceholder]);
 
       try {
         const chatHistory = messages.map((msg) => ({
@@ -211,27 +219,52 @@ export default function ChatPage() {
           content: msg.text,
         }));
 
-        const aiText = await getAIChatResponse(newMessage, chatHistory);
-        setIsTyping(false);
+        const response = await getAIChatResponse(userMessageText, chatHistory);
+        console.log("AI response:", response);
 
-        const aiMessage = {
-          id: Date.now() + 1,
-          senderId: "ai",
-          text: aiText,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, aiMessage]);
-      } catch {
-        setIsTyping(false);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now() + 1,
-            senderId: "ai",
-            text: "Sorry, I couldn't get a response from Gemini AI.",
-            timestamp: new Date(),
-          },
-        ]);
+        const reader = response.getReader();
+        const decoder = new TextDecoder();
+        let aiMessageText = "";
+        let lastUpdateTime = Date.now();
+        const updateInterval = 100;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          aiMessageText += decoder.decode(value, { stream: true });
+          const currentTime = Date.now();
+          if (currentTime - lastUpdateTime > updateInterval && aiMessageText) {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === aiMessagePlaceholder.id
+                  ? { ...msg, text: aiMessageText }
+                  : msg
+              )
+            );
+            lastUpdateTime = currentTime;
+          }
+        }
+        if (aiMessageText) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessagePlaceholder.id
+                ? { ...msg, text: aiMessageText }
+                : msg
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Streaming failed:", error);
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessagePlaceholder.id
+              ? {
+                  ...msg,
+                  text: "Sorry, I couldn't get a response. Please try again.",
+                }
+              : msg
+          )
+        );
       }
       return;
     }

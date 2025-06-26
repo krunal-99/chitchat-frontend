@@ -76,12 +76,18 @@ export async function getAIChatResponse(
   message: string,
   chatHistory: Array<{ role: string; content: string }> = []
 ) {
-  const res = await fetch(`${API_URL}/api/ai/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, chatHistory }),
-  });
-  if (!res.ok) throw new Error("AI request failed");
-  const data = await res.json();
-  return data.response;
+  try {
+    const res = await fetch(`${API_URL}/api/ai/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, chatHistory }),
+    });
+    if (!res.ok || !res.body) {
+      throw new Error(`Request failed with status ${res.status}`);
+    }
+    return res.body;
+  } catch (error) {
+    console.error("Error fetching AI chat response:", error);
+    throw new Error("AI request failed");
+  }
 }
