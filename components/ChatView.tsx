@@ -27,19 +27,12 @@ export function ChatView({
   handleStopTyping,
 }: ChatViewProps) {
   const [showWelcome, setShowWelcome] = useState<boolean>(false);
-  const [streamingMessage, setStreamingMessage] = useState<string | null>(null);
-  const [isStreaming, setIsStreaming] = useState<boolean>(false);
 
   useEffect(() => {
-    if (streamingMessage && messagesEndRef.current) {
+    if (messages && messages.length > 0 && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [streamingMessage, messages]);
-
-  useEffect(() => {
-    setStreamingMessage(null);
-    setIsStreaming(false);
-  }, [selectedUser]);
+  }, [messages]);
 
   useEffect(() => {
     if (selectedUser.id === "ai") {
